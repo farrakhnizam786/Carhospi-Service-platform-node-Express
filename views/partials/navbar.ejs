@@ -1,0 +1,87 @@
+<header data-logged-in="<%= user ? 'true' : 'false' %>">
+  <nav class="navbar">
+
+    <a href="/" class="logo">
+      <span class="logo-car">Car</span><span class="logo-hospi">Hospi</span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/services">Services</a></li>
+      <li><a href="/about">About</a></li>
+      <li>
+        <a href="/user/bookings" id="navbar-bookings-btn" class="nav-bookings-link">
+          Booked Services
+        </a>
+      </li>
+      <li>
+        <a href="/contact" class="btn btn-outline-accent">Contact</a>
+      </li>
+      <% if (!user) { %>
+      <li>
+        <a href="#" id="navbar-login-btn" class="btn-login">
+          <span>👤</span>
+          Login / Sign up
+        </a>
+      </li>
+      <% } else { %>
+      <li style="position: relative;">
+        <button id="user-avatar-btn" class="nav-avatar">
+          <%= (user.name || "U").trim().charAt(0).toUpperCase() %>
+        </button>
+        <div id="user-dropdown" class="nav-dropdown" style="display:none;">
+          <p class="nav-dropdown-name"><%= user.name %></p>
+          <form action="/logout" method="POST" style="margin:0;">
+            <button type="submit" class="btn-logout">Logout</button>
+          </form>
+        </div>
+      </li>
+      <% } %>
+    </ul>
+
+    <button class="nav-menu-toggle" type="button" aria-label="Open menu">
+      <img src="/menu.png" alt="Menu" class="nav-menu-icon" />
+    </button>
+  </nav>
+</header>
+
+<script>
+  const navToggle = document.querySelector(".nav-menu-toggle");
+  const navLinks  = document.querySelector(".nav-links");
+  const isLoggedIn = document.querySelector("header")?.dataset.loggedIn === "true";
+
+  navToggle.addEventListener("click", () => {
+    navLinks.classList.toggle("nav-links-active");
+  });
+
+  const loginBtn = document.getElementById("navbar-login-btn");
+  if (loginBtn) {
+    loginBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      openLoginModal();
+    });
+  }
+
+  const avatarBtn     = document.getElementById("user-avatar-btn");
+  const userDropdown  = document.getElementById("user-dropdown");
+  if (avatarBtn && userDropdown) {
+    avatarBtn.addEventListener("click", () => {
+      userDropdown.style.display =
+        userDropdown.style.display === "none" ? "block" : "none";
+    });
+    document.addEventListener("click", (e) => {
+      if (e.target !== avatarBtn && !userDropdown.contains(e.target)) {
+        userDropdown.style.display = "none";
+      }
+    });
+  }
+
+  function openLoginModal() {
+    const modal = document.getElementById("login-modal");
+    if (modal) {
+      modal.style.display = "flex";
+    } else {
+      window.location.href = "/login";
+    }
+  }
+</script>

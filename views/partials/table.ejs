@@ -1,0 +1,33 @@
+<div class="post-grid">
+  <% if (rows && rows.length) { %>
+    <% rows.forEach((item) => { %>
+      <article class="post-card">
+        <img
+          src="<%= item.image || 'https://images.unsplash.com/photo-1493238792000-8113da705763?auto=format&fit=crop&w=1200&q=80' %>"
+          alt="<%= item.title || item.name || 'Service image' %>"
+          class="post-image"
+          loading="lazy"
+          onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1493238792000-8113da705763?auto=format&fit=crop&w=1200&q=80';"
+        />
+
+        <div class="post-content">
+          <p class="post-category"><%= item.category || 'Garage Service' %></p>
+          <h3><%= item.title || item.name %></h3>
+          <p class="post-desc"><%= item.description %></p>
+        </div>
+
+        <div class="post-meta">
+          <span><%= item.date || '7 Feb 2023' %></span>
+          <span><%= item.views || 55 %> Views</span>
+          <% if (item._id) { %>
+            <a href="/bookservice/<%= item._id %>" class="post-link post-book-btn">Book Now</a>
+          <% } else { %>
+            <a href="/bookservice" class="post-link post-book-btn"><%= item.link || 'Book Now' %></a>
+          <% } %>
+        </div>
+      </article>
+    <% }); %>
+  <% } else { %>
+    <p class="section-text">No data available.</p>
+  <% } %>
+</div>

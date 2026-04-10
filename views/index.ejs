@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CarHospi – Trusted Car Repair & Maintenance</title>
+    <link rel="stylesheet" href="/style.css" />
+    <meta name="description" content="CarHospi – Trusted Car Repair & Maintenance. Fast, reliable service with certified mechanics, transparent pricing, and same-day support. Book your car service online now!" />
+  </head>
+  <body>
+    <%- include("partials/navbar") %>
+
+    <!-- HERO -->
+    <section class="hero-full" id="home">
+      <div class="hero-content">
+        <div class="hero-badge">Trusted Garage Experts</div>
+        <h1>
+          Fast, Reliable <span class="h1-highlight">Car Repair</span><br/>
+          &amp; Maintenance
+        </h1>
+        <p>
+          Keep your vehicle in top condition with certified mechanics,
+          transparent pricing, and same&#8209;day service support. We care
+          for your car like it's our own.
+        </p>
+        <div class="hero-actions">
+          <a href="/bookservice" class="btn btn-primary">Book a Service</a>
+          <a href="#services-section" class="btn btn-secondary">Explore Services</a>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-number">5K+</span>
+            <span class="stat-label">Cars Serviced</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">98%</span>
+            <span class="stat-label">Happy Customers</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">50+</span>
+            <span class="stat-label">Expert Mechanics</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">6+</span>
+            <span class="stat-label">Years Experience</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHY CHOOSE US -->
+    <section>
+      <div class="container">
+        <span class="section-label">Why Us</span>
+        <h2>Why Choose <span class="accent-word">CarHospi</span></h2>
+        <div class="section-underline"></div>
+        <p class="section-text">
+          We are a trusted local garage team focused on high-quality car service, honest pricing,
+          and fast delivery. Our technicians are certified and experienced with all major vehicle brands.
+        </p>
+        <%- include("partials/table", { rows: features }) %>
+      </div>
+    </section>
+
+    <!-- OUR SERVICES -->
+    <section id="services-section">
+      <div class="container">
+        <span class="section-label">Services</span>
+        <h2>Our <span class="accent-word">Services</span></h2>
+        <div class="section-underline"></div>
+        <p class="section-text">
+          Choose your required service and book instantly. We cover everything from oil changes to full engine diagnostics.
+        </p>
+        <%- include("partials/table", { rows: services }) %>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section>
+      <div class="container">
+        <span class="section-label">Reviews</span>
+        <h2>What Our <span class="accent-word">Customers Say</span></h2>
+        <div class="section-underline"></div>
+        <p class="section-text">
+          Real feedback from customers who trust our garage services.
+        </p>
+        <%- include("partials/testimonial") %>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section>
+      <div class="container">
+        <span class="section-label">About Us</span>
+        <h2>About <span class="accent-word">CarHospi</span></h2>
+        <div class="section-underline"></div>
+        <%- include("partials/about") %>
+      </div>
+    </section>
+
+    <%- include("partials/footer") %>
+    <%- include("partials/loginModal") %>
+
+    <script>
+      // Sticky header shadow on scroll
+      const hdr = document.querySelector('header');
+      window.addEventListener('scroll', () => {
+        hdr.classList.toggle('scrolled', window.scrollY > 20);
+      });
+    </script>
+  </body>
+</html>

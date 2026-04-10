@@ -1,0 +1,81 @@
+<!-- Login Modal -->
+<div id="login-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Login / Sign Up</h2>
+      <button id="close-modal-btn" class="modal-close" aria-label="Close">&times;</button>
+    </div>
+
+    <form id="modal-login-form">
+      <input
+        type="email"
+        id="modal-email"
+        class="modal-input"
+        placeholder="Email address"
+        required
+      />
+      <input
+        type="password"
+        id="modal-password"
+        class="modal-input"
+        placeholder="Password"
+        required
+      />
+      <p id="modal-error" class="modal-error"></p>
+      <button type="submit" class="btn btn-primary" style="width:100%; padding:13px; font-size:1rem;">
+        Login
+      </button>
+    </form>
+
+    <p class="modal-footer">
+      New user?
+      <a href="/signup">Sign up here</a>
+    </p>
+  </div>
+</div>
+
+<script>
+  const loginModal    = document.getElementById("login-modal");
+  const closeModalBtn = document.getElementById("close-modal-btn");
+  const modalLoginForm = document.getElementById("modal-login-form");
+  const modalErrorMsg  = document.getElementById("modal-error");
+
+  closeModalBtn.addEventListener("click", () => {
+    loginModal.style.display = "none";
+  });
+
+  loginModal.addEventListener("click", (e) => {
+    if (e.target === loginModal) {
+      loginModal.style.display = "none";
+    }
+  });
+
+  modalLoginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email    = document.getElementById("modal-email").value;
+    const password = document.getElementById("modal-password").value;
+
+    try {
+      const res = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        const data = await res.json();
+        modalErrorMsg.textContent  = data.error || "Login failed";
+        modalErrorMsg.style.display = "block";
+      }
+    } catch (error) {
+      modalErrorMsg.textContent  = "Something went wrong. Try again.";
+      modalErrorMsg.style.display = "block";
+    }
+  });
+
+  window.openLoginModal = function () {
+    loginModal.style.display = "flex";
+  };
+</script>

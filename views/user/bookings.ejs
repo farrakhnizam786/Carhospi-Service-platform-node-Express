@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Bookings</title>
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      .bookings-container {
+        max-width: 1000px;
+        margin: 40px auto;
+      }
+      .bookings-container h2 {
+        color: #22d3ee;
+        margin-bottom: 24px;
+      }
+      .booking-card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 16px;
+      }
+      .booking-title {
+        color: #22d3ee;
+        margin: 0 0 8px;
+      }
+      .booking-date {
+        color: #94a3b8;
+        font-size: 14px;
+        margin: 0;
+      }
+      .status-badge {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .status-pending {
+        background: #fbbf24;
+        color: #000;
+      }
+      .status-approved {
+        background: #10b981;
+        color: #fff;
+      }
+      .status-rejected {
+        background: #f87171;
+        color: #fff;
+      }
+      .status-completed {
+        background: #6366f1;
+        color: #fff;
+      }
+      .booking-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin: 16px 0;
+        padding: 16px 0;
+        border-top: 1px solid #334155;
+        border-bottom: 1px solid #334155;
+      }
+      .detail {
+        color: #cbd5e1;
+      }
+      .detail label {
+        color: #94a3b8;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+      .detail p {
+        margin: 4px 0 0;
+        font-weight: 600;
+      }
+      .admin-notes {
+        background: #0f172a;
+        border-left: 3px solid #22d3ee;
+        padding: 12px;
+        margin-top: 12px;
+        border-radius: 4px;
+        color: #cbd5e1;
+        font-size: 14px;
+      }
+      .booking-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .btn-cancel {
+        background: #f87171;
+        color: #fff;
+      }
+      .btn-cancel:hover {
+        background: #ef4444;
+      }
+      .empty-message {
+        text-align: center;
+        padding: 40px;
+        color: #94a3b8;
+      }
+      .btn-feedback {
+        background: #22d3ee;
+        color: #0f172a;
+      }
+      .btn-feedback:hover {
+        background: #06b6d4;
+      }
+      .rating-display {
+        background: #0f172a;
+        padding: 12px;
+        margin-top: 12px;
+        border-radius: 4px;
+        color: #cbd5e1;
+      }
+      .star {
+        color: #fbbf24;
+      }
+    </style>
+  </head>
+  <body>
+    <%- include("../partials/navbar") %>
+
+    <div class="bookings-container">
+      <h2>My Bookings</h2>
+
+      <% if (bookings.length === 0) { %>
+      <div class="empty-message">
+        <p>You haven't booked any services yet.</p>
+        <a href="/" class="btn btn-primary" style="display: inline-block; padding: 10px 20px;">Browse Services</a>
+      </div>
+      <% } else { %>
+        <% bookings.forEach(booking => { %>
+        <div class="booking-card">
+          <div class="booking-header">
+            <div>
+              <h3 class="booking-title"><%= booking.serviceDetails.name %></h3>
+              <p class="booking-date">Booked on <%= new Date(booking.createdAt).toLocaleDateString() %></p>
+            </div>
+            <span class="status-badge status-<%= booking.status %>">
+              <%= booking.status %>
+            </span>
+          </div>
+
+          <div class="booking-details">
+            <div class="detail">
+              <label>Booking Date</label>
+              <p><%= new Date(booking.bookingDate).toLocaleDateString() %></p>
+            </div>
+            <div class="detail">
+              <label>Time Slot</label>
+              <p><%= booking.timeSlot %></p>
+            </div>
+            <div class="detail">
+              <label>Vehicle</label>
+              <p><%= booking.vehicleType.toUpperCase() %> - <%= booking.vehicleNumber %></p>
+            </div>
+          </div>
+
+          <% if (booking.description) { %>
+          <div class="detail">
+            <label>Notes</label>
+            <p><%= booking.description %></p>
+          </div>
+          <% } %>
+
+          <% if (booking.adminNotes) { %>
+          <div class="admin-notes">
+            <strong>Admin Notes:</strong> <%= booking.adminNotes %>
+          </div>
+          <% } %>
+
+          <% if (booking.rating) { %>
+          <div class="rating-display">
+            <strong>Your Feedback:</strong> 
+            <% for(let i=0; i<booking.rating; i++) { %><span class="star">★</span><% } %>
+            <% if (booking.feedback) { %><p style="margin-top:4px;"><%= booking.feedback %></p><% } %>
+          </div>
+          <% } %>
+
+          <div class="booking-actions">
+            <% if (booking.status === 'pending') { %>
+            <button class="btn-cancel" onclick="cancelBooking('<%= booking._id %>')">
+              Cancel Booking
+            </button>
+            <% } %>
+            <% if (booking.status === 'completed' && !booking.rating) { %>
+            <button class="btn-feedback" onclick="openFeedbackModal('<%= booking._id %>')">
+              Leave Feedback
+            </button>
+            <% } %>
+          </div>
+        </div>
+        <% }); %>
+      <% } %>
+    </div>
+
+    <%- include("../partials/loginModal") %>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h2>Service Feedback</h2>
+          <button onclick="closeFeedbackModal()" class="modal-close" aria-label="Close">&times;</button>
+        </div>
+        <form id="feedback-form">
+          <p style="margin-bottom:10px;">Rate your experience (1-5):</p>
+          <select id="feedback-rating" class="modal-input" required>
+            <option value="5">5 - Excellent</option>
+            <option value="4">4 - Good</option>
+            <option value="3">3 - Average</option>
+            <option value="2">2 - Poor</option>
+            <option value="1">1 - Terrible</option>
+          </select>
+          <textarea id="feedback-text" class="modal-input" placeholder="Any additional comments?" rows="4" style="margin-top:10px; resize:vertical;"></textarea>
+          <button type="submit" class="btn btn-primary" style="width:100%; padding:13px; font-size:1rem; margin-top:10px;">
+            Submit Feedback
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      async function cancelBooking(id) {
+        if (!confirm('Are you sure you want to cancel this booking?')) return;
+
+        try {
+          const res = await fetch(`/bookings/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            window.location.reload();
+          } else {
+            alert('Failed to cancel booking');
+          }
+        } catch (error) {
+          alert('Something went wrong');
+        }
+      }
+
+      let currentFeedbackId = null;
+
+      function openFeedbackModal(id) {
+        currentFeedbackId = id;
+        document.getElementById('feedback-modal').style.display = 'flex';
+      }
+
+      function closeFeedbackModal() {
+        document.getElementById('feedback-modal').style.display = 'none';
+        currentFeedbackId = null;
+      }
+
+      document.getElementById('feedback-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const rating = document.getElementById('feedback-rating').value;
+        const feedback = document.getElementById('feedback-text').value;
+
+        try {
+          const res = await fetch(`/bookings/${currentFeedbackId}/feedback`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rating: parseInt(rating), feedback })
+          });
+
+          if (res.ok) {
+            window.location.reload();
+          } else {
+            alert('Failed to submit feedback');
+          }
+        } catch (error) {
+          alert('Network error');
+        }
+      });
+    </script>
+  </body>
+</html>

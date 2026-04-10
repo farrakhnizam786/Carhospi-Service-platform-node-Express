@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Bookings – CarHospi Admin</title>
+    <link rel="stylesheet" href="/admin.css" />
+  </head>
+  <body>
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <a href="/admin/dashboard" class="topbar-logo">
+        Car<span class="logo-accent">Hospi</span>
+        <span class="role-pill">Admin</span>
+      </a>
+      <div class="topbar-right">
+        <span class="topbar-user">Logged in as <strong><%= admin.name %></strong></span>
+        <a href="/admin/dashboard" class="topbar-link">← Dashboard</a>
+        <form action="/admin/logout" method="POST" style="margin:0">
+          <button type="submit" class="logout-btn">Logout</button>
+        </form>
+      </div>
+    </header>
+
+    <div class="page-wrap">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <h1>Manage <span>Bookings</span></h1>
+        <button onclick="loadBookings()" class="btn-action" id="refresh-btn">↻ Refresh</button>
+      </div>
+
+      <!-- Stat strip -->
+      <div class="stat-strip">
+        <div class="stat-card s-pending">  <div class="stat-label">Pending</div>  <div class="stat-value" id="cnt-pending">—</div></div>
+        <div class="stat-card s-approved"> <div class="stat-label">Approved</div> <div class="stat-value" id="cnt-approved">—</div></div>
+        <div class="stat-card s-inservice"><div class="stat-label">In Service</div><div class="stat-value" id="cnt-inservice">—</div></div>
+        <div class="stat-card s-done">     <div class="stat-label">Completed</div><div class="stat-value" id="cnt-done">—</div></div>
+        <div class="stat-card s-rejected"> <div class="stat-label">Rejected</div> <div class="stat-value" id="cnt-rejected">—</div></div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <button class="filter-btn active"  data-filter="all"        onclick="applyFilter('all',this)">All</button>
+        <button class="filter-btn"  data-filter="pending"    onclick="applyFilter('pending',this)">⏳ Pending</button>
+        <button class="filter-btn"  data-filter="approved"   onclick="applyFilter('approved',this)">✅ Approved</button>
+        <button class="filter-btn"  data-filter="in-service" onclick="applyFilter('in-service',this)">🔧 In Service</button>
+        <button class="filter-btn"  data-filter="completed"  onclick="applyFilter('completed',this)">🏁 Completed</button>
+        <button class="filter-btn"  data-filter="rejected"   onclick="applyFilter('rejected',this)">❌ Rejected</button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Service</th>
+              <th>Date / Slot</th>
+              <th>Vehicle</th>
+              <th>Status</th>
+              <th>Progress</th>
+              <th>Admin Note</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bookings-body">
+            <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">Loading bookings…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Status Update Modal -->
+    <div id="status-modal" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modal-title">Update Booking Status</h3>
+          <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+
+        <span class="modal-label">Select New Status</span>
+        <div class="status-selector">
+          <div class="status-option" data-val="pending"    onclick="selectStatus('pending')">⏳ Pending</div>
+          <div class="status-option" data-val="approved"   onclick="selectStatus('approved')">✅ Approved</div>
+          <div class="status-option" data-val="in-service" onclick="selectStatus('in-service')">🔧 In Service</div>
+          <div class="status-option" data-val="completed"  onclick="selectStatus('completed')">🏁 Completed</div>
+          <div class="status-option" data-val="rejected"   onclick="selectStatus('rejected')">❌ Rejected</div>
+        </div>
+
+        <span class="modal-label" style="margin-top:4px;">Admin Comment / Note</span>
+        <textarea id="modal-notes" class="modal-note" placeholder="e.g. Vehicle received, oil change in progress…"></textarea>
+        <p class="error-msg" id="modal-error"></p>
+
+        <div class="modal-footer">
+          <button class="btn-cancel-modal" onclick="closeModal()">Cancel</button>
+          <button class="btn-confirm" id="modal-confirm-btn">Update Status</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+      let allBookings = [];
+      let currentFilter = 'all';
+      let currentBookingId = null;
+      let selectedStatus = null;
+
+      // ── Load & display ─────────────────────────────────────────────
+      async function loadBookings() {
+        const btn = document.getElementById('refresh-btn');
+        btn.textContent = '↻ Loading…';
+        try {
+          const res = await fetch('/bookings/admin/all');
+          allBookings = await res.json();
+          updateStats();
+          renderTable();
+        } catch (e) {
+          document.getElementById('bookings-body').innerHTML =
+            '<tr><td colspan="8" style="text-align:center;color:#f87171;padding:40px;">Failed to load bookings</td></tr>';
+        } finally {
+          btn.textContent = '↻ Refresh';
+        }
+      }
+
+      function updateStats() {
+        const counts = { pending:0, approved:0, 'in-service':0, completed:0, rejected:0 };
+        allBookings.forEach(b => { if (counts[b.status] !== undefined) counts[b.status]++; });
+        document.getElementById('cnt-pending').textContent  = counts.pending;
+        document.getElementById('cnt-approved').textContent = counts.approved;
+        document.getElementById('cnt-inservice').textContent= counts['in-service'];
+        document.getElementById('cnt-done').textContent     = counts.completed;
+        document.getElementById('cnt-rejected').textContent = counts.rejected;
+      }
+
+      function applyFilter(filter, btn) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderTable();
+      }
+
+      function renderTable() {
+        const filtered = currentFilter === 'all'
+          ? allBookings
+          : allBookings.filter(b => b.status === currentFilter);
+
+        const tbody = document.getElementById('bookings-body');
+        if (!filtered.length) {
+          tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>No bookings found</p></div></td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = filtered.map(b => {
+          const date     = new Date(b.bookingDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+          const pipeline = getPipeline(b.status);
+          const note     = b.adminNotes ? `<span class="note-preview" title="${b.adminNotes}">${b.adminNotes}</span>` : `<span style="color:var(--muted);font-size:.8rem;">—</span>`;
+          const userName  = b.user?.name  || '—';
+          const userEmail = b.user?.email || '';
+          const svcName   = b.serviceDetails?.name || b.service?.name || '—';
+          const ratingStr = b.rating ? `<br><span style="color:#fbbf24;">${'★'.repeat(b.rating)}</span>` : '';
+          const feedbackStr = b.feedback ? `<br><small style="color:var(--text);">${b.feedback}</small>` : '';
+
+          return `
+          <tr>
+            <td>
+              <div class="user-cell">
+                <span class="user-name">${userName}</span>
+                <span class="user-email">${userEmail}</span>
+              </div>
+            </td>
+            <td><span class="service-name">${svcName}</span></td>
+            <td>
+              <div class="date-text">${date}</div>
+              <div class="slot-text">🕐 ${b.timeSlot}</div>
+            </td>
+            <td>
+              <div style="font-size:.88rem;color:var(--text);">${b.vehicleType?.toUpperCase()}</div>
+              <div class="vehicle-plate">${b.vehicleNumber}</div>
+            </td>
+            <td><span class="status-badge sb-${b.status}">${statusLabel(b.status)}</span></td>
+            <td>${pipeline}</td>
+            <td>${note}${ratingStr}${feedbackStr}</td>
+            <td>
+              <div class="action-group">
+                ${actionButtons(b._id, b.status)}
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+      }
+
+      function statusLabel(s) {
+        const labels = { pending:'Pending', approved:'Approved', 'in-service':'In Service', completed:'Completed', rejected:'Rejected' };
+        return labels[s] || s;
+      }
+
+      function getPipeline(current) {
+        const steps = ['pending','approved','in-service','completed'];
+        const ci = steps.indexOf(current);
+        return `<div class="pipeline">${steps.map((s,i) => {
+          const cls = i < ci ? 'done' : (i === ci ? 'active' : '');
+          const lbl = s === 'in-service' ? '🔧 In Svc' : (s.charAt(0).toUpperCase()+s.slice(1));
+          return `<div class="pl-step ${cls}">${lbl}</div>`;
+        }).join('')}</div>`;
+      }
+
+      function actionButtons(id, status) {
+        const btns = [];
+        if (status === 'pending')    btns.push(`<button class="act-btn act-approved"  onclick="quickUpdate('${id}','approved')">✅ Approve</button>`);
+        if (status === 'approved')   btns.push(`<button class="act-btn act-inservice" onclick="quickUpdate('${id}','in-service')">🔧 Start</button>`);
+        if (status === 'in-service') btns.push(`<button class="act-btn act-done"      onclick="quickUpdate('${id}','completed')">🏁 Done</button>`);
+        if (status !== 'rejected' && status !== 'completed')
+          btns.push(`<button class="act-btn act-reject" onclick="quickUpdate('${id}','rejected')">✕ Reject</button>`);
+        btns.push(`<button class="act-btn act-edit" onclick="openModal('${id}','${status}')">✏️ Edit</button>`);
+        return btns.join('');
+      }
+
+      // ── Quick update (no modal, no note) ───────────────────────────
+      async function quickUpdate(id, status) {
+        try {
+          const res = await fetch(`/bookings/${id}/status`, {
+            method:'PUT',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({status})
+          });
+          if (res.ok) { showToast(`Status updated to "${statusLabel(status)}"`, 'success'); loadBookings(); }
+          else showToast('Update failed', 'error');
+        } catch { showToast('Network error', 'error'); }
+      }
+
+      // ── Modal (with note) ──────────────────────────────────────────
+      function openModal(id, currentStatus) {
+        currentBookingId = id;
+        selectedStatus   = currentStatus;
+        document.getElementById('modal-title').textContent = 'Update Booking Status';
+        document.getElementById('modal-notes').value = '';
+        document.getElementById('modal-error').style.display = 'none';
+        document.querySelectorAll('.status-option').forEach(el => {
+          el.classList.toggle('selected', el.dataset.val === currentStatus);
+        });
+        document.getElementById('status-modal').classList.add('open');
+      }
+
+      function selectStatus(val) {
+        selectedStatus = val;
+        document.querySelectorAll('.status-option').forEach(el => {
+          el.classList.toggle('selected', el.dataset.val === val);
+        });
+      }
+
+      function closeModal() {
+        document.getElementById('status-modal').classList.remove('open');
+        currentBookingId = null; selectedStatus = null;
+      }
+
+      document.getElementById('modal-confirm-btn').addEventListener('click', async () => {
+        if (!selectedStatus) {
+          const err = document.getElementById('modal-error');
+          err.textContent = 'Please select a status.'; err.style.display='block'; return;
+        }
+        const notes = document.getElementById('modal-notes').value.trim();
+        try {
+          const res = await fetch(`/bookings/${currentBookingId}/status`, {
+            method:'PUT',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({status:selectedStatus, adminNotes:notes})
+          });
+          if (res.ok) {
+            closeModal();
+            showToast(`Status updated to "${statusLabel(selectedStatus)}"`, 'success');
+            loadBookings();
+          } else {
+            const d = await res.json();
+            const err = document.getElementById('modal-error');
+            err.textContent = d.error || 'Update failed'; err.style.display='block';
+          }
+        } catch { showToast('Network error','error'); }
+      });
+
+      // Close modal on backdrop click
+      document.getElementById('status-modal').addEventListener('click', e => {
+        if (e.target.id === 'status-modal') closeModal();
+      });
+
+      // ── Toast ──────────────────────────────────────────────────────
+      function showToast(msg, type='success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.className = `toast ${type}`;
+        requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
+        setTimeout(() => { t.classList.remove('show'); }, 3200);
+      }
+
+      loadBookings();
+    </script>
+  </body>
+</html>

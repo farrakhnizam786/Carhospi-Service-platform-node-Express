@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Super Admin Login – CarHospi</title>
+    <link rel="stylesheet" href="/admin.css" />
+  </head>
+  <body>
+    <div class="admin-login-page">
+      <div class="login-card">
+        <div class="login-brand">
+          <a href="/" class="login-logo">Car<span class="logo-accent">Hospi</span></a>
+          <div class="login-role-badge" style="background:rgba(139,92,246,.12);color:#a78bfa;border-color:rgba(139,92,246,.25);">
+            Super Admin Portal
+          </div>
+        </div>
+
+        <h1 class="login-title">Super Admin Access</h1>
+
+        <% if (error) { %>
+        <div class="login-error">⚠️ <%= error %></div>
+        <% } %>
+
+        <form action="/superadmin/login" method="POST" class="login-form">
+          <input
+            type="email"
+            name="email"
+            placeholder="Super admin email"
+            class="login-input"
+            required
+            autocomplete="email"
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            class="login-input"
+            required
+            autocomplete="current-password"
+          />
+          <button
+            type="submit"
+            class="login-btn"
+            style="background:linear-gradient(135deg,#5b21b6,#8b5cf6,#a78bfa);"
+          >
+            Access Dashboard →
+          </button>
+        </form>
+
+        <div class="login-hint">
+          <p>Only super admins can create and manage admin accounts.</p>
+          <p style="margin-top:10px;">
+            Regular admin? <a href="/admin/login">Login here</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

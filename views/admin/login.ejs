@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login – CarHospi</title>
+    <link rel="stylesheet" href="/admin.css" />
+  </head>
+  <body>
+    <div class="admin-login-page">
+      <div class="login-card">
+        <div class="login-brand">
+          <a href="/" class="login-logo">Car<span class="logo-accent">Hospi</span></a>
+          <div class="login-role-badge">Admin Portal</div>
+        </div>
+
+        <h1 class="login-title">Welcome Back</h1>
+
+        <% if (error) { %>
+        <div class="login-error">⚠️ <%= error %></div>
+        <% } %>
+
+        <form action="/admin/login" method="POST" class="login-form">
+          <input
+            type="email"
+            name="email"
+            placeholder="Admin email address"
+            class="login-input"
+            required
+            autocomplete="email"
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            class="login-input"
+            required
+            autocomplete="current-password"
+          />
+          <button type="submit" class="login-btn">Login to Dashboard →</button>
+        </form>
+
+        <div class="login-hint">
+          <p>Admin credentials are issued by the Super Admin only.</p>
+          <p style="margin-top:10px;">
+            Super Admin? <a href="/superadmin/login">Login here</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+<div class="book-card">
+  <% if (typeof user !== 'undefined' && user) { %>
+    <form action="/bookings" method="POST">
+      <input
+        type="text"
+        name="name"
+        placeholder="Your Name"
+        value="<%= user.name || '' %>"
+        required
+      />
+      <input
+        type="tel"
+        name="phone"
+        placeholder="Phone Number"
+        required
+      />
+      <select name="service" required>
+        <option value="">Select Service</option>
+        <% if (typeof services !== 'undefined' && services.length > 0) { %>
+          <% services.forEach(function(svc) { %>
+            <option value="<%= svc._id %>"><%= svc.name %></option>
+          <% }); %>
+        <% } else { %>
+          <option>Oil Change</option>
+          <option>Engine Diagnostics</option>
+          <option>Brake Repair</option>
+          <option>General Checkup</option>
+        <% } %>
+      </select>
+      <input type="date" name="date" required />
+      <button type="submit" class="btn btn-primary">
+        Confirm Booking
+      </button>
+    </form>
+  <% } else { %>
+    <div style="text-align:center; padding: 30px 0;">
+      <p style="margin-bottom: 16px; color: #555; font-size: 1.1rem;">
+        You need to be logged in to book a service.
+      </p>
+      <button class="btn btn-primary" onclick="openLoginModal()" style="background:black;">
+        Login to Book
+      </button>
+    </div>
+  <% } %>
+</div>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Super Admin Dashboard – CarHospi</title>
+    <link rel="stylesheet" href="/admin.css" />
+  </head>
+  <body>
+
+    <!-- ── Topbar ── -->
+    <header class="topbar">
+      <a href="/superadmin/dashboard" class="topbar-logo">
+        Car<span class="logo-accent">Hospi</span>
+        <span class="role-pill" style="background:rgba(139,92,246,.12);color:#a78bfa;border-color:rgba(139,92,246,.25);">
+          Super Admin
+        </span>
+      </a>
+      <div class="topbar-right">
+        <span class="topbar-user">
+          <strong>Super Admin</strong> Control Panel
+        </span>
+        <form action="/superadmin/logout" method="POST" style="margin:0;">
+          <button type="submit" class="logout-btn">Logout</button>
+        </form>
+      </div>
+    </header>
+
+    <!-- ── Page ── -->
+    <div class="page-wrap">
+
+      <div class="page-header">
+        <div>
+          <h1>Super Admin <span>Dashboard</span></h1>
+          <p class="page-subtitle">Manage admin accounts and platform access</p>
+        </div>
+      </div>
+
+      <!-- ── Stats row ── -->
+      <div class="stat-strip" style="grid-template-columns:repeat(3,1fr);margin-bottom:32px;">
+        <div class="stat-card s-approved">
+          <div class="stat-label">Total Admins</div>
+          <div class="stat-value"><%= admins.length %></div>
+          <div class="stat-delta">Active accounts</div>
+        </div>
+        <div class="stat-card s-inservice">
+          <div class="stat-label">Platform</div>
+          <div class="stat-value">Live</div>
+          <div class="stat-delta">CarHospi is running</div>
+        </div>
+        <div class="stat-card s-done">
+          <div class="stat-label">Avg Rating</div>
+          <div class="stat-value"><%= avgRating %> ★</div>
+          <div class="stat-delta">Customer Satisfaction</div>
+        </div>
+      </div>
+
+      <!-- ── Create Admin Card ── -->
+      <div class="admin-section">
+        <h3>➕ Create New Admin Account</h3>
+
+        <% if (error) { %><div class="msg-error">⚠️ <%= error %></div><% } %>
+        <% if (success) { %><div class="msg-success">✓ <%= success %></div><% } %>
+
+        <form action="/superadmin/admins" method="POST">
+          <div class="create-admin-grid">
+            <div class="form-group">
+              <label>Admin Name</label>
+              <input type="text" name="name" placeholder="Full name" class="admin-input" required />
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" name="email" placeholder="admin@carhospi.com" class="admin-input" required />
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="text" name="password" placeholder="Temporary password" class="admin-input" required />
+            </div>
+          </div>
+          <button type="submit" class="form-submit-btn" style="background:linear-gradient(135deg,#5b21b6,#8b5cf6);">
+            Create Admin Account
+          </button>
+        </form>
+      </div>
+
+      <!-- ── Manage Admins Table ── -->
+      <div class="admin-section" style="--accent:var(--violet);">
+        <h3>🛡 Manage All Admins</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Created</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (admins.length === 0) { %>
+              <tr>
+                <td colspan="6">
+                  <div class="empty-state">
+                    <span class="icon">👤</span>
+                    <p>No admins created yet.</p>
+                  </div>
+                </td>
+              </tr>
+              <% } %>
+              <% admins.forEach((a, idx) => { %>
+              <tr>
+                <td style="color:var(--muted);font-weight:600;"><%= idx + 1 %></td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#a78bfa);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;flex-shrink:0;">
+                      <%= (a.name || "A").charAt(0).toUpperCase() %>
+                    </div>
+                    <span style="font-weight:600;color:#fff;"><%= a.name %></span>
+                  </div>
+                </td>
+                <td style="color:var(--muted);"><%= a.email %></td>
+                <td><span class="admin-role-badge"><%= a.role %></span></td>
+                <td style="color:var(--muted);"><%= new Date(a.createdAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) %></td>
+                <td>
+                  <form
+                    action="/superadmin/admins/<%= a._id %>/delete"
+                    method="POST"
+                    onsubmit="return confirm('Delete <%= a.name %>? This cannot be undone.')"
+                    style="margin:0;"
+                  >
+                    <button type="submit" class="delete-btn">🗑 Delete</button>
+                  </form>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /page-wrap -->
+
+  </body>
+</html>
