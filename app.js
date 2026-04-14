@@ -56,7 +56,7 @@ app.use(async (req, res, next) => {
       contactAddress: "123 Garage Street, Auto City, AC 12345",
     };
   }
-  
+
   next();
 });
 
@@ -72,3 +72,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT} http://localhost:${PORT}`);
 });
+
+module.exports = app;
