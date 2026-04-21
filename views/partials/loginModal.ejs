@@ -21,6 +21,16 @@
         placeholder="Password"
         required
       />
+
+      <div class="login-extras">
+        <label class="remember-label">
+          <input type="checkbox" id="modal-remember" />
+          <span class="custom-check"></span>
+          Remember me
+        </label>
+        <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+      </div>
+
       <p id="modal-error" class="modal-error"></p>
       <button type="submit" class="btn btn-primary" style="width:100%; padding:13px; font-size:1rem;">
         Login
@@ -52,14 +62,15 @@
 
   modalLoginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email    = document.getElementById("modal-email").value;
-    const password = document.getElementById("modal-password").value;
+    const email      = document.getElementById("modal-email").value;
+    const password   = document.getElementById("modal-password").value;
+    const rememberMe = document.getElementById("modal-remember").checked;
 
     try {
       const res = await fetch("/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, rememberMe }),
       });
 
       if (res.ok) {

@@ -14,7 +14,7 @@ const getSuperAdminLogin = (req, res) => {
 
 const loginSuperAdmin = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
 
     if (email !== SUPERADMIN_EMAIL || password !== SUPERADMIN_PASSWORD) {
       return res.status(401).render("superadmin/login", {
@@ -26,6 +26,11 @@ const loginSuperAdmin = async (req, res) => {
       email: SUPERADMIN_EMAIL,
       role: "superadmin",
     };
+
+    // Extend session cookie if remember me is checked
+    if (rememberMe) {
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+    }
 
     return res.redirect("/superadmin/dashboard");
   } catch (error) {
